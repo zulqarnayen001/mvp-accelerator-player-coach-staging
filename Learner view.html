@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M.V.P. Accelerator · Player-Coach</title>
+<link rel="icon" href="assets/mark.svg">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/player.css">
+</head>
+<body>
+<div id="app" class="player">
+  <header class="topbar" role="banner">
+    <button class="icon-btn" id="btnMenu" aria-label="Show or hide the course menu" aria-expanded="true" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </button>
+    <img src="assets/mark.svg" alt="" class="top-mark">
+    <div class="top-title"><span class="course-name">M.V.P. Accelerator</span><span class="track-name"></span></div>
+    <div class="top-where"><span class="top-lesson" id="topLesson" aria-live="polite"></span><span class="counter" id="counter"></span></div>
+    <div class="top-right">
+      <div class="dropdown">
+        <button class="top-link" id="btnResources" aria-haspopup="true" aria-expanded="false" aria-controls="resourcesMenu">Resources <span aria-hidden="true">▾</span></button>
+        <div class="dropdown-menu" id="resourcesMenu" role="menu" hidden></div>
+      </div>
+      <button class="top-link" id="btnTranscript" aria-pressed="false">Transcript</button>
+      <span class="learner" id="learnerName" hidden></span>
+    </div>
+  </header>
+
+  <div class="body">
+    <nav class="sidebar" id="sidebar" aria-label="Course menu">
+      <div class="menu-head">Your season</div>
+      <ol class="menu" id="menu"></ol>
+    </nav>
+
+    <main class="stage-wrap" id="stageWrap">
+      <div class="stage" id="stage" role="region" aria-label="Course screen">
+        <div class="slide" id="slide" tabindex="-1"></div>
+        <div class="form-host" id="formHost"></div>
+        <div class="cc-bar" id="ccBar" aria-live="off"></div>
+      </div>
+      <aside class="transcript" id="transcript" hidden aria-label="Transcript">
+        <div class="transcript-head"><h2>Transcript</h2><button class="icon-btn small" id="btnCloseTranscript" aria-label="Close transcript">✕</button></div>
+        <div class="transcript-body" id="transcriptBody"></div>
+      </aside>
+    </main>
+  </div>
+
+  <footer class="bottombar" role="contentinfo">
+    <div class="controls">
+      <div class="left-controls">
+        <button class="ctl" id="btnPlayVo" aria-label="Play" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="i-play"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="i-pause"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
+        </button>
+        <div class="seek off" id="seek" role="slider" tabindex="-1" aria-disabled="true" aria-label="Slide timeline" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0 seconds of 0">
+          <div class="seek-track"><div class="seek-reach" id="seekReach"></div><div class="seek-fill" id="seekFill"></div></div><div class="seek-knob"></div>
+        </div>
+        <button class="ctl" id="btnReplay" aria-label="Replay this screen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z" fill="currentColor"/></svg>
+        </button>
+        <button class="ctl cc" id="btnCC" aria-pressed="true" aria-label="Captions">CC</button>
+        <label class="vol"><span class="sr-only">Volume</span><input type="range" id="volume" min="0" max="1" step="0.05" value="0.9"></label>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn prev" id="btnPrev"><span aria-hidden="true">‹</span> Prev</button>
+        <button class="nav-btn next" id="btnNext"><span class="lbl">Next</span> <span aria-hidden="true">›</span></button>
+        <div class="gate-msg" id="gateMsg" aria-live="polite"></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card">
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<div class="panel" id="dataPanel" hidden role="dialog" aria-label="Course data">
+  <div class="panel-head"><h2>Course data</h2><button class="icon-btn small" id="btnClosePanel" aria-label="Close">✕</button></div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+<audio id="vo" preload="auto"></audio>
+<script src="js/captions_pc.js"></script>
+<script src="js/narration_pc.js"></script>
+<script src="js/content_pc.js"></script>
+<script src="js/player.js"></script>
+</body>
+</html>
