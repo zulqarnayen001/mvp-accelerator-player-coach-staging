@@ -1208,7 +1208,8 @@ window.COURSE = {
         "opts": [
          "Yes",
          "No"
-        ]
+        ],
+        "row": true
        },
        {
         "id": "F2",
@@ -1243,7 +1244,13 @@ window.COURSE = {
         ],
         "row": true,
         "break_before": "Haven't seen enough of this"
-       },
+       }
+      ]
+     },
+     {
+      "heading": "HOW THEY'VE LED",
+      "intro": "",
+      "items": [
        {
         "id": "31.0",
         "label": "Priorities change, sometimes with little warning. Leaders respond to that differently.\nWhen priorities or conditions change, this leader adjusts their approach while staying focused on what matters most.",
@@ -1259,13 +1266,7 @@ window.COURSE = {
         ],
         "row": true,
         "break_before": "Haven't seen enough of this"
-       }
-      ]
-     },
-     {
-      "heading": "HOW THEY'VE LED",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "32.0",
         "label": "Every role involves setbacks. Some people move on from them quickly, others stay with them longer.\nAfter setbacks or difficult moments, this leader recovers, refocuses and adjusts based on what they learn.",
@@ -1281,7 +1282,13 @@ window.COURSE = {
         ],
         "row": true,
         "break_before": "Haven't seen enough of this"
-       },
+       }
+      ]
+     },
+     {
+      "heading": "HOW THEY'VE LED",
+      "intro": "",
+      "items": [
        {
         "id": "33.0",
         "label": "Leaders differ in how much they spell out what matters most right now.\nThis leader creates clarity around priorities and helps turn direction into action.",
@@ -1297,13 +1304,7 @@ window.COURSE = {
         ],
         "row": true,
         "break_before": "Haven't seen enough of this"
-       }
-      ]
-     },
-     {
-      "heading": "HOW THEY'VE LED",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "34.0",
         "label": "How a leader manages their own energy tends to show in how they turn up.\nWhen demands increase, this leader manages their focus and capacity in ways that support sustained performance.",
@@ -1319,7 +1320,13 @@ window.COURSE = {
         ],
         "row": true,
         "break_before": "Haven't seen enough of this"
-       },
+       }
+      ]
+     },
+     {
+      "heading": "HOW THEY'VE LED",
+      "intro": "",
+      "items": [
        {
         "id": "35.0",
         "label": "Leaders can have intentions. Turning them into finished work takes something else, and leaders differ in how well they do it.\nThis leader turns priorities into decisions and follow-through that keep important work moving.",
@@ -1335,13 +1342,7 @@ window.COURSE = {
         ],
         "row": true,
         "break_before": "Haven't seen enough of this"
-       }
-      ]
-     },
-     {
-      "heading": "HOW THEY'VE LED",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "36.0",
         "label": "Leaders often know what they want to do, and still find it harder to do when conditions get hard.\nWhen conditions change or pressure increases, this leader continues to demonstrate effective decision-making and leadership.",
