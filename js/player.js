@@ -222,7 +222,7 @@
   }
   function seekTo(t) {
     const m = seekMedia(); if (!m) return;
-    if (m === vo && !vo.dataset.key) { const k = mainVo(S[st.pos]); if (!k || !NAR[k]) return; vo.src = 'audio/' + k + '.mp3'; vo.volume = st.vol; vo.dataset.key = k; }
+    if (m === vo && !vo.dataset.key) { const k = mainVo(S[st.pos]); if (!k || !NAR[k]) return; vo.src = 'audio/' + k + '.mp3' + (NAR[k].v ? '?v=' + NAR[k].v : ''); vo.volume = st.vol; vo.dataset.key = k; }
     const d = seekDur(); t = Math.max(0, Math.min(t, seekLimit(), d ? d - 0.05 : 0));
     try { m.currentTime = t; } catch (e) { return; }
     if (m === vo) { scrubBuilds(t); voCaption(); }
@@ -271,7 +271,7 @@
   function playVo(key) {
     const n = NAR[key]; if (!n) return false;
     if (activeVideo && !activeVideo.paused) return false;
-    vo.src = 'audio/' + key + '.mp3'; vo.volume = st.vol; vo.dataset.key = key;
+    vo.src = 'audio/' + key + '.mp3' + (NAR[key] && NAR[key].v ? '?v=' + NAR[key].v : ''); vo.volume = st.vol; vo.dataset.key = key;
     seekBind('vo');
     const token = ++voToken, p = vo.play();
     // a play that a newer one interrupted (Replay, a quick Next) is not a blocked play: leave that screen alone
