@@ -966,3 +966,7 @@ textarea.svy-in{max-width:820px;resize:vertical}
 .svy-opts.row .svy-opt{flex:1 1 0;min-width:0;max-width:none;flex-direction:column;justify-content:flex-start;text-align:center;gap:6px;padding:9px 6px;font-size:14px}
 .svy-opts.row .svy-break{border:0;border-left:1px dashed var(--slate);margin:0 4px;max-width:none;align-self:stretch;width:0;flex:none}
 .svy-body .svy-q:first-of-type{margin-top:8px}
+.svy-body{padding:16px 32px 12px}
+.svy-q{margin-top:12px;padding-bottom:12px}
+.svy-opts.row .svy-opt{padding:7px 6px;gap:4px}
+.svy-opts:has(input[type=checkbox]){display:grid;grid-template-columns:1fr 1fr;max-width:960px}

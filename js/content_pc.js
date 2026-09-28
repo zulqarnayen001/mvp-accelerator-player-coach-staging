@@ -60,7 +60,13 @@ window.COURSE = {
         ],
         "row": true,
         "break_after": "I don't have one written"
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
+      "intro": "",
+      "items": [
        {
         "id": "2.0",
         "label": "I used my written leadership vision to guide how I showed up, in my role, in life, and as a coach for my team.",
@@ -76,13 +82,7 @@ window.COURSE = {
         ],
         "row": true,
         "break_after": "I don't have one written"
-       }
-      ]
-     },
-     {
-      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "3.0",
         "label": "I drew on my sense of purpose, which connects my work and life to a larger impact, through my family, team, organization, or broader community.",
@@ -98,7 +98,13 @@ window.COURSE = {
         ],
         "row": true,
         "break_after": "I'm not clear on my purpose yet"
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
+      "intro": "",
+      "items": [
        {
         "id": "4.0",
         "label": "I used my organization's values to guide my decisions and leadership behavior.",
@@ -113,13 +119,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "5.0",
         "label": "I used a clear 90-day view of my most important goals and priorities to track progress and guide where I focused my time and attention.",
@@ -218,7 +218,13 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · RESILIENCE",
+      "intro": "",
+      "items": [
        {
         "id": "10.0",
         "label": "After setbacks or challenging situations, I recovered and became fully present for what came next.",
@@ -233,13 +239,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · RESILIENCE",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "11.0",
         "label": "When the right approach wasn't clear, I helped my team reflect on how they were working and adjust their approach based on lessons learned.",
@@ -275,7 +275,13 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · ALIGNMENT",
+      "intro": "",
+      "items": [
        {
         "id": "13.0",
         "label": "When someone raised a different perspective or disagreed, I stayed open to their input while helping us move toward a decision.",
@@ -290,13 +296,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · ALIGNMENT",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "14.0",
         "label": "When business priorities shifted, I worked with my direct report(s) to clarify how their leadership growth goals align with the business 90-day priorities.",
@@ -332,7 +332,13 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · WELLBEING",
+      "intro": "",
+      "items": [
        {
         "id": "16.0",
         "label": "When demands increased, I helped my team make appropriate tradeoffs to sustain focus and performance.",
@@ -347,13 +353,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · WELLBEING",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "17.0",
         "label": "I prioritized sleep, movement, or nutrition to support my energy and leadership effectiveness.",
@@ -478,7 +478,13 @@ window.COURSE = {
         "label": "Describe one leadership challenge you've faced recently where you felt stretched between delivering results and developing others.",
         "type": "textarea",
         "required": false
-       },
+       }
+      ]
+     },
+     {
+      "heading": "LEADERSHIP REFLECTION",
+      "intro": "",
+      "items": [
        {
         "id": "24.0",
         "label": "What's one leadership behavior you want to improve in how you support your team's performance?",
@@ -668,7 +674,13 @@ window.COURSE = {
         ],
         "row": true,
         "break_after": "I don't have one written"
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
+      "intro": "",
+      "items": [
        {
         "id": "2.0",
         "label": "I used my written leadership vision to guide how I showed up, in my role, in life, and as a coach for my team.",
@@ -684,13 +696,7 @@ window.COURSE = {
         ],
         "row": true,
         "break_after": "I don't have one written"
-       }
-      ]
-     },
-     {
-      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "3.0",
         "label": "I drew on my sense of purpose, which connects my work and life to a larger impact, through my family, team, organization, or broader community.",
@@ -706,7 +712,13 @@ window.COURSE = {
         ],
         "row": true,
         "break_after": "I'm not clear on my purpose yet"
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
+      "intro": "",
+      "items": [
        {
         "id": "4.0",
         "label": "I used my organization's values to guide my decisions and leadership behavior.",
@@ -721,13 +733,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR LEADERSHIP FOUNDATION · M.V.P.",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "5.0",
         "label": "I used a clear 90-day view of my most important goals and priorities to track progress and guide where I focused my time and attention.",
@@ -826,7 +832,13 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · RESILIENCE",
+      "intro": "",
+      "items": [
        {
         "id": "10.0",
         "label": "After setbacks or challenging situations, I recovered and became fully present for what came next.",
@@ -841,13 +853,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · RESILIENCE",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "11.0",
         "label": "When the right approach wasn't clear, I helped my team reflect on how they were working and adjust their approach based on lessons learned.",
@@ -883,7 +889,13 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · ALIGNMENT",
+      "intro": "",
+      "items": [
        {
         "id": "13.0",
         "label": "When someone raised a different perspective or disagreed, I stayed open to their input while helping us move toward a decision.",
@@ -898,13 +910,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · ALIGNMENT",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "14.0",
         "label": "When business priorities shifted, I worked with my direct report(s) to clarify how their leadership growth goals align with the business 90-day priorities.",
@@ -940,7 +946,13 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       },
+       }
+      ]
+     },
+     {
+      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · WELLBEING",
+      "intro": "",
+      "items": [
        {
         "id": "16.0",
         "label": "When demands increased, I helped my team make appropriate tradeoffs to sustain focus and performance.",
@@ -955,13 +967,7 @@ window.COURSE = {
          "N/A (I didn't have a relevant opportunity)"
         ],
         "row": true
-       }
-      ]
-     },
-     {
-      "heading": "YOUR CORE 4 LEADERSHIP BEHAVIORS · WELLBEING",
-      "intro": "",
-      "items": [
+       },
        {
         "id": "17.0",
         "label": "I prioritized sleep, movement, or nutrition to support my energy and leadership effectiveness.",
@@ -1086,7 +1092,13 @@ window.COURSE = {
         "label": "Think of a specific moment during the Accelerator when conditions changed, something went wrong, people disagreed or pressure increased. Which practice or tool did you use, and what did it help you do differently, for yourself and for how you lead your team?",
         "type": "textarea",
         "required": false
-       },
+       }
+      ]
+     },
+     {
+      "heading": "LEADERSHIP REFLECTION",
+      "intro": "",
+      "items": [
        {
         "id": "24.0",
         "label": "What's one leadership behavior you commit to sustaining and strengthening over the next 90 days?",
