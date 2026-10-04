@@ -351,6 +351,9 @@
   const wake = ev => { for (let x = ev.target.closest ? ev.target.closest('.b:not(.in)') : null; x; x = x.parentElement ? x.parentElement.closest('.b:not(.in)') : null) { x.classList.remove('now'); x.classList.add('in'); } };
   slide.addEventListener('pointerdown', wake); slide.addEventListener('focusin', wake); slide.addEventListener('click', wake, true);
   slide.addEventListener('focusin', () => ccPlace()); slide.addEventListener('focusout', () => setTimeout(ccPlace, 0));
+  // Oct 3 (Melissa's sheet row 21): no right-click menu and no dragging on course content; text selection is off in the CSS
+  stage.addEventListener('contextmenu', e => { if (!e.target.closest('input,textarea')) e.preventDefault(); });
+  stage.addEventListener('dragstart', e => e.preventDefault());
   function revealAll() {
     clearTimeout(build.fallback);
     build.els.filter(e => !e.classList.contains('in')).forEach((e, i) => setTimeout(() => { e.classList.remove('now'); e.classList.add('in'); }, REDUCE ? 0 : Math.min(i, 8) * 70));
@@ -387,7 +390,7 @@
     opts = opts || {};
     const meta = V[key];
     // no native controls: the player's seek bar is the video's timeline, and Play/Pause sits next to it
-    box.innerHTML = `<video playsinline preload="auto" disablepictureinpicture ${meta.poster ? `poster="${meta.poster}"` : ''} aria-label="${esc(opts.label || 'Video')}"><source src="${meta.src}" type="video/mp4"></video><div class="vcc" aria-hidden="true"></div>`;
+    box.innerHTML = `<video playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate" ${meta.poster ? `poster="${meta.poster}"` : ''} aria-label="${esc(opts.label || 'Video')}"><source src="${meta.src}" type="video/mp4"></video><div class="vcc" aria-hidden="true"></div>`;
     const v = $('video', box), cc = $('.vcc', box);
     v.volume = st.vol; v._maxT = 0; v._key = key;
     activeVideo = v;
@@ -422,10 +425,16 @@
       seekBind('video'); syncPlayBtn(); seekLoop();
       if (opts.onPlay) opts.onPlay(v);
     });
+    // the video fades in once it is actually playing, so the poster never jumps to the first frame mid-transition
+    box.classList.add('vfade'); v.addEventListener('playing', () => box.classList.add('on')); v.addEventListener('loadeddata', () => { if (!opts.autoplay) box.classList.add('on'); });
     if (opts.autoplay) {
-      const p = v.play();
-      if (p && p.catch) p.catch(() => { if (!$('.bigplay', box)) addBigPlay(box, v, (U.huddle && U.huddle.play) || 'Press play'); });
-    }
+      const start = () => {
+        if (activeVideo !== v) return;
+        const p = v.play();
+        if (p && p.catch) p.catch(() => { box.classList.add('on'); if (!$('.bigplay', box)) addBigPlay(box, v, (U.huddle && U.huddle.play) || 'Press play'); });
+      };
+      if (opts.delay && !REDUCE) setTimeout(start, opts.delay); else start();
+    } else setTimeout(() => box.classList.add('on'), 400);
     return v;
   }
 
@@ -452,7 +461,24 @@
   }
   const okAlert = t => `<div class="alert ok"><span class="ai" aria-hidden="true">✓</span><span>${esc(t)}</span></div>`;
   const eyebrow = (t, c) => `<p${c == null ? ' class="eyebrow"' : B(c, 'eyebrow')}>${STAR}${esc(t)}</p>`;
-  const bg = (p, alt) => p ? `<div class="bgphoto ${alt ? 'kb2' : ''}" style="background-image:url('${photo(p)}')" aria-hidden="true"></div>` : '';
+  const POS = C.photo_pos || {};
+  const bg = (p, alt) => p ? `<div class="bgphoto ${alt ? 'kb2' : ''}" style="background-image:url('${photo(p)}')${POS[p] ? `;background-position:${POS[p]}` : ''}" aria-hidden="true"></div>` : '';
+  /* The motion watermark (Melissa's mood board, Oct 1): faint lines that move behind the thematic screens, one motion per
+     part of the season (COURSE.motion: momentum, shift, pressure, progression, adapt, pivot, resilience). Decorative only. */
+  const WM = {
+    momentum: ['M-40 560 C 260 520, 520 420, 760 250 S 1180 40, 1340 10', 'M-40 600 C 300 560, 560 470, 800 300 S 1200 90, 1340 60', 'M-40 640 C 340 600, 600 520, 840 350 S 1220 140, 1340 110'],
+    shift: ['M180 760 L 620 -40', 'M380 760 L 820 -40', 'M560 760 L 1000 -40', 'M760 760 L 1200 -40', 'M940 760 L 1380 -40'],
+    pressure: ['M-40 300 C 160 240, 300 380, 480 300 S 800 220, 980 320 S 1240 260, 1340 300', 'M-40 360 C 160 300, 300 440, 480 360 S 800 280, 980 380 S 1240 320, 1340 360', 'M-40 420 C 160 360, 300 500, 480 420 S 800 340, 980 440 S 1240 380, 1340 420', 'M-40 480 C 160 420, 300 560, 480 480 S 800 400, 980 500 S 1240 440, 1340 480'],
+    progression: ['M700 120 L 980 360 L 700 600', 'M860 120 L 1140 360 L 860 600', 'M1020 120 L 1300 360 L 1020 600'],
+    adapt: ['M1340 720 A 520 520 0 0 0 820 200', 'M1340 640 A 440 440 0 0 0 900 200', 'M1340 560 A 360 360 0 0 0 980 200'],
+    pivot: ['M-40 120 L 1340 640', 'M-40 640 L 1340 120', 'M420 -40 L 860 760'],
+    resilience: ['M-40 520 C 300 520, 420 260, 700 260 S 1100 520, 1340 420', 'M-40 560 C 320 560, 440 300, 720 300 S 1120 560, 1340 460', 'M-40 600 C 340 600, 460 340, 740 340 S 1140 600, 1340 500']
+  };
+  const wm = (L, cls) => {
+    const k = (C.motion || {})[L]; const ps = WM[k]; if (!ps) return '';
+    return `<svg class="wm wm-${k} ${cls || ''}" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${ps.map((d, i) => `<path d="${d}" style="--i:${i}"/>`).join('')}</svg>`;
+  };
+  const lockup = dark => C.brand ? `<img class="lockup" src="${dark ? C.brand.lockup_white : C.brand.lockup}" alt="${esc(C.brand.alt)}">` : '';
   const deco = pos => `<div class="deco-star" style="${pos}" aria-hidden="true">${STARSVG}</div>`;
   const pdfBtn = (href, label, cls, icon) => `<a class="btn ${cls || ''}" href="${href}" target="_blank" rel="noopener">${icon || ''}${esc(label)}</a>`;
   const extBtn = (href, label, cls) => `<a class="btn ${cls || ''}" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}${IC.ext}</a>`;
@@ -470,12 +496,13 @@
   const lastC = s => { const k = s.vo && s.vo[0]; return k && NAR[k] ? NAR[k].cues.length - 1 : 0; };
   const momentOf = L => S.find(x => x.lesson === L && x.type === 'moment');
   const seasonBar = L => `<div class="season b" data-c="0" aria-hidden="true"><span>${esc(U.cover.season)}</span>${LESSONS.map(l => `<i class="${l === L ? 'on' : (lessonDone(l) ? 'done' : '')}"></i>`).join('')}</div>`;
-  const brand = () => `<div class="brand b" data-c="0"><img src="assets/mark.svg" alt="">${esc(U.cover.brand)}</div>`;
+  const brand = () => `<div class="brand b" data-c="0">${lockup(true) || `<img src="assets/mark.svg" alt="">${esc(U.cover.brand)}`}</div>`;
+  const finalCls = L => L === 'L6' ? ' final' : '';
   const bignum = L => outnum(L === 'L0' ? '00' : '0' + L.slice(1), 330, 'rgba(201,164,92,.62)', 'bignum');
 
   /* ----- Getting Started ----- */
   R.cover = s => ({
-    cls: 'dark cover', html: `${bg(s.photo)}<div class="shade"></div>${bignum(s.lesson)}${brand()}
+    cls: 'dark cover' + finalCls(s.lesson), html: `${bg(s.photo)}<div class="shade"></div>${wm(s.lesson)}${bignum(s.lesson)}${brand()}
       <div class="inner"><div${B(0, 'kicker')}>${STAR}${esc(s.kicker)}</div><h1${B(0)}>${esc(s.heading)}</h1>
       <div${B(1, 'meta')}>${IC.clock}<span>${esc(s.meta)}</span></div><div${B(lastC(s), 'cta')}>${nextBtn(s.cta)}</div></div>${seasonBar(s.lesson)}`,
     after: () => bindNext()
@@ -486,12 +513,12 @@
     after: () => {
       const box = $('#fv');
       const v = mountVideo(box, s.video, {
-        autoplay: true, label: s.sub || s.label,
+        autoplay: true, delay: 520, label: s.sub || s.label,
         onEnd: () => {
           if (s.auto_advance) { setTimeout(() => { if (S[st.pos] === s) go(st.pos + 1); }, 500); return; }
           if ($('.endcard', box)) return;
           box.insertAdjacentHTML('beforeend', `<div class="endcard on-dark" role="status"><div class="tick" aria-hidden="true">${IC.check}</div><h2>${esc(s.sub || s.label)}</h2>
-            <div class="row"><button class="btn ghost" id="again">${IC.retry}${esc(U.fullvideo.again)}</button>${nextBtn(U.fullvideo.continue, 'endNext')}</div></div>`);
+            ${s.endnote ? `<p class="endnote">${STAR}${esc(s.endnote)}</p>` : ''}<div class="row"><button class="btn ghost" id="again">${IC.retry}${esc(U.fullvideo.again)}</button>${nextBtn(U.fullvideo.continue, 'endNext')}</div></div>`);
           $('#again').addEventListener('click', () => { $('.endcard', box).remove(); v.currentTime = 0; play(v); });
           $('#endNext').addEventListener('click', () => go(st.pos + 1));
           $('#endNext').focus();
@@ -507,16 +534,23 @@
   R.quote = s => ({
     cls: 'dark quote', html: `${bg(s.photo)}<div class="shade"></div><div class="inner">
       ${eyebrow(F(s, 'eyebrow'), 0)}<div${B(1, 'qmark')} aria-hidden="true">“</div>
-      <blockquote${B(1)}>${esc(s.quote)}</blockquote><div${B(2, 'who')}>${esc(s.who)}</div><div${B(2, 'role')}>${esc(s.role)}</div>
+      <blockquote${B(1)}>${esc(s.quote)}<span class="qclose" aria-hidden="true">”</span></blockquote><div${B(2, 'who')}>${esc(s.who)}</div><div${B(2, 'role')}>${esc(s.role)}</div>${s.role2 ? `<div${B(2, 'role')}>${esc(s.role2)}</div>` : ''}
       <div${B(3)}>${nextBtn(s.cta)}</div></div>`,
     after: () => bindNext()
   });
 
+  /* The sponsor screen is a template (Melissa, Oct 2): per client a company name and logo, the sponsor's name, title and
+     photo, and their video. The narration names no one, so the same clip works for every company. The video must be
+     watched through, like Melissa's welcome; until a client's video exists the screen shows where it will play. */
   R.sponsor = s => {
     const o = { org: s.org };
+    const face = s.photo ? `<img class="sp-photo" src="${s.photo}" alt="">` : `<div class="sp-photo ini" aria-hidden="true">${esc(initials(s.name))}</div>`;
     return {
-      cls: 'steel sponsor', html: `${deco('left:-130px;top:-150px')}<div class="inner"><div>${eyebrow(T(F(s, 'eyebrow'), o), 0)}<h1 class="who b" data-c="0">${esc(s.name)}</h1><p class="line b" data-c="0">${esc(T(F(s, 'line'), o))}</p></div>
-      <div class="ph b z" data-c="0"><div class="ini" aria-hidden="true">${esc(initials(s.name))}</div><b>${esc(s.name)}, ${esc(s.org)}</b><span>${esc(F(s, 'placeholder'))}</span></div></div>`
+      cls: 'steel sponsor2', html: `${deco('left:-130px;top:-150px')}<div class="sp-left">${s.logo ? `<img class="sp-logo b" data-c="0" src="${s.logo}" alt="${esc(s.org)}">` : ''}${eyebrow(T(F(s, 'eyebrow'), o), 0)}
+        <div class="sp-person b" data-c="0">${face}<div><h1>${esc(s.name)}</h1><p>${esc(s.title || '')}</p><span>${esc(s.org)}</span></div></div>
+        <p class="line b" data-c="0">${esc(T(F(s, 'line'), o))}</p></div>
+      <div class="sp-video b z" data-c="0" id="spv">${s.video ? '' : `<div class="sp-ph"><span class="play" aria-hidden="true">${PLAY_SVG}</span><b>${esc(F(s, 'placeholder'))}</b><span>${esc(F(s, 'placeholder_note'))}</span></div>`}</div>`,
+      after: () => { if (s.video) mountVideo($('#spv'), s.video, { label: s.name, bigPlay: U.huddle.play }); }
     };
   };
 
@@ -563,14 +597,14 @@
     return {
       html: `<div class="split"><div class="photo">${bg(s.photo)}<div class="ov"></div><div class="cap"><div class="statcap b" data-c="0"><b>${esc(F(s, 'stat'))}</b><span>${esc(s.stat_text)}</span></div></div></div>
       <div class="content">${eyebrow(s.eyebrow, 0)}<h1 class="title b" data-c="0">${esc(s.heading)}</h1>
-      ${nextCard(s, 1, st.gates.pre && cs ? cs.ok : '')}
+      ${nextCard(s, 1, st.gates.pre && cs ? cs.ok : '')}${s.must ? `<p class="mustline b" data-c="1">${IC.lock}<span>${esc(s.must)}</span></p>` : ''}
       <div class="guide b" data-c="2"><span class="gs">${STAR}</span><div><span class="tag">${esc(s.note_tag)}</span><div>${esc(s.note)}</div></div></div></div></div>`
     };
   };
 
   R.faq = s => ({
     cls: 'night', html: `${deco('right:-120px;top:-150px')}<div class="hd">${eyebrow(F(s, 'eyebrow'), 0)}<h1 class="title b" data-c="0">${esc(F(s, 'heading'))}</h1></div>
-      <div class="faqgrid">${s.cards.map(c => `<div${B(c.c, 'faq')}><div class="qm" aria-hidden="true">“</div><h2>${esc(c.q)}</h2><ul>${c.pts.map(p => `<li>${STAR}${esc(p)}</li>`).join('')}</ul></div>`).join('')}</div>`
+      <div class="faqgrid">${s.cards.map(c => `<div${B(c.c, 'faq')}><h2 class="qfull">“${esc(c.q)}”</h2><ul>${c.pts.map(p => `<li>${STAR}${esc(p)}</li>`).join('')}</ul></div>`).join('')}</div>`
   });
 
   R.book = s => {
@@ -578,7 +612,7 @@
     return {
       cls: 'mist', html: `<div class="hd">${eyebrow(F(s, 'eyebrow'), 0)}<h1 class="title b" data-c="0">${esc(F(s, 'heading'))}</h1></div>
       <div class="bookgrid">
-        <div${B(0, 'bookpanel navy')}><div class="art"><div class="book3d" aria-hidden="true"><img src="assets/mark.svg" alt=""><b>${esc(b.cover[0])}</b><span>${esc(b.cover[1])}</span><i>${esc(b.cover[2])}</i></div></div>
+        <div${B(0, 'bookpanel navy')}><div class="art">${b.img ? `<img class="bookimg" src="${b.img}" alt="${esc(b.alt || b.title)}">` : `<div class="book3d" aria-hidden="true"><img src="assets/mark.svg" alt=""><b>${esc(b.cover[0])}</b><span>${esc(b.cover[1])}</span><i>${esc(b.cover[2])}</i></div>`}</div>
           <div class="txt"><span class="tag">${esc(b.tag)}</span><h2>${esc(b.title)}</h2><p class="b" data-c="1">${esc(b.line)}</p>
           <div class="btns b" data-c="1"><a class="btn sm" href="${C.book_url}" target="_blank" rel="noopener">${esc(b.button)}${IC.ext}</a></div></div></div>
         <div${B(2, 'bookpanel white')}><div class="art"><div class="scstack"><img src="${sc.img}" alt="${esc(sc.alt)}"><img src="${sc.example_img}" alt="${esc(sc.example_alt)}"><span class="exlabel">${esc(sc.example_label)}</span></div></div>
@@ -596,7 +630,7 @@
   R.ready = s => {
     const open = st.gates.pre || st.free;
     return {
-      cls: 'dark cover', html: `${bg(s.photo)}<div class="shade"></div>${brand()}<div class="inner">
+      cls: 'dark cover', html: `${bg(s.photo)}<div class="shade"></div>${wm(s.lesson)}${brand()}<div class="inner">
         <div${B(0, 'kicker')}>${open ? IC.check : STAR}${esc(open ? s.kicker_open : F(s, 'kicker_locked'))}</div><h1${B(0)}>${esc(F(s, 'heading'))}</h1>
         <div${B(1, 'meta')}><span>${esc(open ? s.line_open : F(s, 'line_locked'))}</span></div>
         <div${B(1, 'cta')}>${open ? nextBtn(F(s, 'cta')) : `<button class="btn ghost lg" id="backPre">${IC.arrowL}${esc(F(s, 'back'))}</button>`}</div></div>${seasonBar('L1')}`,
@@ -612,7 +646,7 @@
       return a;
     }, []);
     return {
-      cls: 'dark moment', html: `${bg(s.photo, true)}<div class="shade"></div><div class="top">${eyebrow(U.moment.eyebrow, 0)}</div>
+      cls: 'dark moment' + finalCls(s.lesson), html: `${bg(s.photo, true)}<div class="shade"></div>${wm(s.lesson, 'soft')}<div class="top">${eyebrow(U.moment.eyebrow, 0)}</div>
       <div class="scene ${s.scene.length > 190 ? 'long' : ''}">${sents.map((x, i) => `<span class="b" data-c="0" data-d="${i * 520}">${esc(x.trim())}</span>`).join('')}</div>`
     };
   };
@@ -640,24 +674,51 @@
       return {
         html: `<div class="split w420"><div class="photo">${bg(m ? m.photo : 'woman_profile', true)}<div class="ov"></div><div class="cap">${eyebrow(K.eyebrow, 0)}<p class="capline b" data-c="0">${esc(K.b_caption)}</p></div></div>
         <div class="content" style="padding-top:110px">${eyebrow(K.eyebrow, 0)}<h1 class="title b" data-c="0">${esc(K.b_heading)}</h1>
-        <div class="pgrid b" data-c="0" role="radiogroup" aria-label="${esc(K.b_heading)}">${C.patterns.map(p => `<button class="ptile" role="radio" aria-checked="${st.patterns[L] === p}" data-p="${p}">${esc(p)}</button>`).join('')}</div>
+        <div class="pgrid b" data-c="0" role="radiogroup" aria-label="${esc(K.b_heading)}">${C.patterns.map(x => { const [p, m] = Array.isArray(x) ? x : [x, '']; return `<button class="ptile${m ? ' meant' : ''}" role="radio" aria-checked="${st.patterns[L] === p}" data-p="${p}"><b>${esc(p)}</b>${m ? `<small>${esc(m)}</small>` : ''}</button>`; }).join('')}</div>
         ${wrote ? `<div class="wrote b" data-c="1"><span class="tag">${esc(K.wrote)}</span>${wrote}</div>` : ''}</div></div>${steps3(1)}`,
         after: () => $$('[data-p]').forEach(b => b.addEventListener('click', () => { st.patterns[L] = b.dataset.p; save(); logInteraction('pattern_' + L, 'choice', b.dataset.p, 'neutral'); $$('[data-p]').forEach(x => x.setAttribute('aria-checked', x === b)); }))
       };
     }
+    const words = st.fivewords, anchor = s.anchor;
     return {
-      cls: 'steel', html: `${deco('right:-110px;bottom:-140px')}${steps3(2)}<div class="hd">${eyebrow(K.c_eyebrow, 0)}<h1 class="title b" data-c="0" style="font-size:46px">${esc(K.c_heading)}</h1>
+      cls: 'steel', html: `${deco('right:-110px;bottom:-140px')}${signal('ci')}${steps3(2)}<div class="hd">${eyebrow(K.c_eyebrow, 0)}<h1 class="title b" data-c="0" style="font-size:46px">${esc(K.c_heading)}</h1>
       <div class="b" data-c="2" style="margin-top:16px"><span class="pill glass">${IC.clock}${esc(K.c_time)}</span></div></div>
-      <div class="reset">${K.c_steps.map((t, i) => `<div${B(1, 'rs')}>${outnum('0' + (i + 1), 72)}${K.c_tags ? `<span class="rtag">${esc(K.c_tags[i])}</span>` : ''}<p>${esc(t)}</p></div>`).join('')}</div>`
+      <div class="reset">${K.c_steps.map((t, i) => `<div${B(1, 'rs')}>${outnum('0' + (i + 1), 72)}${K.c_tags ? `<span class="rtag">${esc(K.c_tags[i])}</span>` : ''}<p>${esc(t)}</p>${i === 0 && words ? `<q class="rsmine">${esc(words)}</q>` : ''}${i === 3 && anchor ? `<q class="rsmine">${esc(anchor)}</q>` : ''}</div>`).join('')}</div>`
+    };
+  };
+
+  /* The neuroscience line (Oct 3): a signal that runs tight and fast, then settles, to show the reset at work without a brain on screen. */
+  const signal = cls => `<svg class="signal ${cls || ''}" viewBox="0 0 1280 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 L60 60 L80 20 L100 100 L120 25 L140 95 L160 30 L180 90 L200 40 L220 80 L240 48 L260 70 L290 55 L340 62 L420 58 L520 61 L640 60 L1280 60"/></svg>`;
+
+  /* The Foundation Reset (Lesson 1, Oct 3): the book's drill, Melissa's own example, then the learner's five words,
+     which the check-in shows back to them in every lesson. */
+  R.reset = s => {
+    const RS = U.reset, saved = st.fivewords || '';
+    const count = t => t.trim() ? t.trim().split(/\s+/).length : 0;
+    return {
+      cls: 'steel resetscr', html: `${signal('rs-sig')}<div class="rs-left">${eyebrow(RS.eyebrow, 0)}<h1 class="title b" data-c="0">${esc(s.heading)}</h1>
+        <div class="rs-science b" data-c="1"><span class="tag">${esc(RS.science_tag)}</span><p>${esc(s.science)}</p></div>
+        <div class="rs-example b" data-c="2"><span class="tag">${esc(RS.example_label)}</span>${s.example.map(e => `<div class="rs-ex"><i>${esc(e[0])}</i><b>${esc(e[1])}</b></div>`).join('')}<p class="rs-note">${esc(s.example_note)}</p></div></div>
+      <div class="rs-right b r" data-c="3"><label class="tag" for="fw">${esc(RS.yours)}</label>
+        <input id="fw" class="fwin" maxlength="80" autocomplete="off" placeholder="${esc(RS.placeholder)}" value="${esc(saved)}">
+        <div class="fwcount" id="fwc">${esc(T(RS.count, { n: count(saved) }))}</div>
+        <span class="tag" style="margin-top:18px">${esc(RS.pick)}</span><div class="fwsug">${s.suggestions.map(x => `<button class="chip" data-w="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+        <div class="row" style="margin-top:20px"><button class="btn" id="fwSave">${esc(RS.save)}</button></div><div id="fwOk" aria-live="polite">${saved ? okAlert(RS.saved) : ''}</div></div>`,
+      after: () => {
+        const inp = $('#fw'), upd = () => { $('#fwc').textContent = T(RS.count, { n: count(inp.value) }); $('#fwOk').innerHTML = ''; };
+        inp.addEventListener('input', upd);
+        $$('[data-w]').forEach(b => b.addEventListener('click', () => { inp.value = b.dataset.w; upd(); inp.focus(); }));
+        $('#fwSave').addEventListener('click', () => { const v = inp.value.trim(); if (!v) { inp.focus(); return; } st.fivewords = v; save(); logInteraction('five_words', 'fill-in', '[text kept in suspend data]', 'neutral'); $('#fwOk').innerHTML = okAlert(RS.saved); });
+      }
     };
   };
 
   R.recall = s => {
     const pick = st.recall[s.id], done = pick != null, ok = pick === s.correct;
     return {
-      cls: 'mist', html: `${deco('right:-100px;bottom:-120px;color:var(--navy)')}<div class="center">${eyebrow(U.recall.eyebrow, 0)}<span class="pill mist b" data-c="0" style="margin:-2px 0 22px">${esc(T(U.recall.from, { n: lessonNo(s.lesson) - 1 }))}</span>
-      <h1 class="bigq b" data-c="1">${esc(s.q)}</h1>
-      <div class="opts2 b" data-c="1">${s.opts.map((o, i) => { const cls = done ? (i === s.correct ? 'right' : (i === pick ? 'wrong' : '')) : ''; return `<button class="opt2 ${cls}" aria-pressed="${pick === i}" data-i="${i}" ${done ? 'disabled' : ''}>${cls ? `<span class="mk" aria-hidden="true">${cls === 'right' ? IC.check : IC.x}</span>` : ''}${esc(o)}</button>`; }).join('')}</div>
+      cls: 'mist recallscr', html: `${wm(s.lesson, 'light')}${deco('right:-100px;bottom:-120px;color:var(--navy)')}<div class="center">${eyebrow(U.recall.eyebrow, 0)}<span class="pill mist b" data-c="0" style="margin:-2px 0 22px">${esc(T(U.recall.from, { n: lessonNo(s.lesson) - 1 }))}</span>
+      <h1 class="bigq b" data-c="0">${esc(s.q)}</h1>
+      <div class="opts2 b" data-c="0">${s.opts.map((o, i) => { const cls = done ? (i === s.correct ? 'right' : (i === pick ? 'wrong' : '')) : ''; return `<button class="opt2 ${cls}" aria-pressed="${pick === i}" data-i="${i}" ${done ? 'disabled' : ''}>${cls ? `<span class="mk" aria-hidden="true">${cls === 'right' ? IC.check : IC.x}</span>` : ''}${esc(o)}</button>`; }).join('')}</div>
       <div id="rfb" aria-live="polite">${done ? fbc(ok, null, ok ? s.ok : s.no) : ''}</div></div>`,
       after: () => $$('[data-i]').forEach(b => b.addEventListener('click', () => { const i = +b.dataset.i; st.recall[s.id] = i; save(); logInteraction('recall_' + s.lesson, 'choice', s.opts[i], i === s.correct ? 'correct' : 'incorrect'); render(false); }))
     };
@@ -679,9 +740,11 @@
   R.tabs = s => {
     const TB = U.tabs;
     const items = s.kind === 'araw' ? C.araw.map(a => ({ k: a.k, name: a.name, sub: a.desc, icon: a.icon, parts: a.parts })) : s.items.map(it => Object.assign({}, it, { icon: ICON[it.icon] || it.icon }));
+    const letter = x => x.icon && x.icon.length === 1;
+    const icn = (x, cls) => letter(x) ? `<span class="lbadge ${cls || ''}" aria-hidden="true">${esc(x.icon)}</span>` : `<img${cls ? ` class="${cls}"` : ''} src="${x.icon}" alt="">`;
     const seen = st.tabs[s.id] || {}; const nSeen = items.filter(it => seen[it.k]).length;
     const sel = items.find(it => it.k === ui.sel);
-    const head = x => `<img class="bgicon" src="${x.icon}" alt=""><div class="phead"><img src="${x.icon}" alt=""><div><h3>${esc(x.name)}</h3><div class="desc">${esc(x.sub)}</div></div></div>`;
+    const head = x => `${icn(x, 'bgicon')}<div class="phead">${icn(x)}<div><h3>${esc(x.name)}</h3><div class="desc">${esc(x.sub)}</div></div></div>`;
     const panel = !sel
       ? `<div class="tabpanel empty b r" data-c="1">${s.kind === 'araw' ? `<img class="hex" src="assets/photos/hexagon.jpg" alt="The A.R.A.W. hexagon: Agility, Resilience, Alignment and Wellbeing around your M.V.P.">` : `<div class="bigprompt">${esc(s.eyebrow)}</div>`}<p>${IC.arrowL}${esc(TB.prompt)}</p></div>`
       : s.kind === 'araw'
@@ -689,7 +752,7 @@
         : `<div class="tabpanel">${head(sel)}<div class="big">${esc(sel.big)}</div><div class="line">${esc(sel.line)}</div>${sel.test ? `<div class="testbox"><span class="tag">${esc(TB.test)}</span><div>${esc(sel.test)}</div></div>` : ''}</div>`;
     return {
       html: `<div class="hd">${eyebrow(s.eyebrow, 0)}<h1 class="title b" data-c="0" style="font-size:38px">${esc(s.heading)}</h1></div>
-      <div class="tabcol b l" data-c="1" role="tablist" aria-label="${esc(s.heading)}">${items.map(it => `<button class="tab" role="tab" aria-selected="${ui.sel === it.k}" data-k="${it.k}"><img src="${it.icon}" alt=""><span><b>${esc(it.name)}</b><small>${esc(it.sub)}</small></span><span class="seen" aria-label="${seen[it.k] ? 'opened' : ''}">${seen[it.k] ? IC.check : ''}</span></button>`).join('')}
+      <div class="tabcol b l" data-c="1" role="tablist" aria-label="${esc(s.heading)}">${items.map(it => `<button class="tab" role="tab" aria-selected="${ui.sel === it.k}" data-k="${it.k}">${icn(it)}<span><b>${esc(it.name)}</b><small>${esc(it.sub)}</small></span><span class="seen" aria-label="${seen[it.k] ? 'opened' : ''}">${seen[it.k] ? IC.check : ''}</span></button>`).join('')}
         <div class="tabdots">${items.map(it => `<i class="${seen[it.k] ? 'on' : ''}"></i>`).join('')}<span>${esc(T(TB.opened, { n: nSeen, total: items.length }))}</span></div></div>
       <div role="tabpanel" aria-live="polite">${panel}</div>`,
       after: () => $$('[data-k]').forEach(b => b.addEventListener('click', () => {
@@ -759,7 +822,7 @@
   };
 
   R.season = s => ({
-    cls: 'steel', html: `${deco('right:-110px;bottom:-140px')}<div class="hd">${eyebrow(s.eyebrow, 0)}<h1 class="title b" data-c="0">${esc(s.heading)}</h1></div>
+    cls: 'steel', html: `${s.motion ? wm(s.lesson) : ''}${deco('right:-110px;bottom:-140px')}<div class="hd">${eyebrow(s.eyebrow, 0)}<h1 class="title b" data-c="0">${esc(s.heading)}</h1></div>
       <div class="season3"><div class="b" data-c="0"><div class="ninety">${esc(s.big[0])}</div><p>${esc(s.big[1])}</p></div>
       <div>${s.steps.map((x, i) => `<div${B(1, 'srow')}><span class="num">${i + 1}</span><div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div></div>`).join('')}</div>
       <div><div class="parts">${s.parts.map(x => `<div${B(2, 'part')}><b>${esc(x[0])}</b><span>${esc(x[1])}</span><em>${esc(x[2])}</em></div>`).join('')}</div>
@@ -861,15 +924,21 @@
     ui.cleanup = () => cancelAnimationFrame(raf);
   }
 
+  /* The weekly time (Oct 3, Melissa): the lesson stays as it is and the Playbook takes the adjustment. One drill is this
+     week's core rep (s.core, its minutes in the big number); the others are extra reps, if there is time. */
   R.playbook = s => {
-    const PB = U.playbook, n = s.lesson.slice(1);
+    const PB = U.playbook, n = s.lesson.slice(1), core = s.core != null ? s.core : null;
     const maxMin = Math.max(...s.drills.map(d => d[3]));
+    const big = core != null ? s.drills[core][3] : s.total;
+    const row = (d, i) => `<div${B(d[4], 'drillrow' + (core == null ? '' : (i === core ? ' core' : d[0] === 'Assessment' ? ' extra req' : ' extra')))}><span class="chipnotch">${esc(/^\d/.test(d[0]) ? PB.drill + ' ' + d[0] : d[0])}</span><div>${core != null ? `<span class="coretag">${esc(i === core ? PB.core_tag : d[0] === 'Assessment' && PB.req_tag ? PB.req_tag : PB.extra_tag)}</span>` : ''}<h3>${esc(d[1])}</h3><span class="pil">${esc(d[2])}</span></div><div><div class="bar"><i style="--w:${Math.round(d[3] / maxMin * 100)}%"></i></div><div class="mm">${d[3]} ${esc(PB.min)}</div></div></div>`;
+    const order = core == null ? s.drills.map((d, i) => i) : [core].concat(s.drills.map((d, i) => i).filter(i => i !== core));
     return {
       html: `<div class="pbwrap"><div class="pbleft">${deco('right:-170px;bottom:-170px')}${eyebrow(PB.left_eyebrow, 0)}<img class="cov b z" data-c="0" src="${F(s, 'cover')}" alt="">
-        <div class="mins b" data-c="0"><b>${esc(s.total)}</b><small>${esc(PB.min)}</small></div><p class="where b" data-c="0">${esc(s.scorecard ? PB.where_sc : PB.where)}</p></div>
+        <div class="mins b" data-c="0"><b>${esc(big)}</b><small>${esc(PB.min)}${core != null ? ' ' + esc(PB.core_caption) : ''}</small></div><p class="where b" data-c="0">${esc(s.scorecard ? PB.where_sc : PB.where)}</p></div>
       <div class="pbright">${eyebrow(PB.eyebrow, 0)}<h1 class="title b" data-c="0" style="font-size:40px;margin-bottom:12px">${esc(T(PB.heading, { n }))}</h1>
-        ${s.drills.map(d => `<div${B(d[4], 'drillrow')}><span class="chipnotch">${esc(/^\d/.test(d[0]) ? PB.drill + ' ' + d[0] : d[0])}</span><div><h3>${esc(d[1])}</h3><span class="pil">${esc(d[2])}</span></div><div><div class="bar"><i style="--w:${Math.round(d[3] / maxMin * 100)}%"></i></div><div class="mm">${d[3]} ${esc(PB.min)}</div></div></div>`).join('')}
-        <div class="row b" data-c="${lastC(s)}" style="margin-top:28px">${pdfBtn(s.pdf, T(PB.open, { n }), '', IC.doc)}${s.scorecard ? pdfBtn(PB.scorecard_pdf, PB.scorecard, 'ghost', IC.doc) : ''}</div></div></div>`
+        ${order.map(i => row(s.drills[i], i)).join('')}
+        ${PB.feedback ? `<p class="fbhabit b" data-c="${lastC(s)}">${IC.people}<span>${esc(PB.feedback)}</span></p>` : ''}
+        <div class="row b" data-c="${lastC(s)}" style="margin-top:18px">${pdfBtn(s.pdf, T(PB.open, { n }), '', IC.doc)}${s.scorecard ? pdfBtn(PB.scorecard_pdf, PB.scorecard, 'ghost', IC.doc) : ''}</div></div></div>`
     };
   };
 
@@ -883,14 +952,16 @@
     };
   };
 
+  // 'ran', 'later', or an older saved true (ran)
+  const pdVal = s => st.pd[s.id] === true ? 'ran' : (st.pd[s.id] || '');
   R.prodrill = s => {
     const PD = U.prodrill, p = P[s.pro]; const total = p.steps.reduce((a, x) => a + x[1], 0);
     const fmt = x => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;
     return {
       html: `<div class="pdhead b" data-c="0"><img src="${p.img}" alt=""><div>${eyebrow(T(PD.eyebrow, { first: firstName(p) }) + (p.team ? ' · ' + PD.team : ''))}<h1 class="title">${esc(p.drill)}</h1><p class="sub">${esc(p.drillSub)}</p></div></div>
-      <div class="pdsteps">${p.steps.map((x, i) => `<div${B(1, 'pdstep')} id="pd${i}"><div class="top"><span class="t">${esc(T(PD.step, { n: i + 1 }))}</span><span class="tm">${fmt(x[1])}</span></div>${outnum('0' + (i + 1), 66, 'rgba(201,164,92,.95)')}<h3>${esc(x[0])}</h3><p>${esc(x[2])}</p><i class="prog"></i></div>`).join('')}</div>
+      <div class="pdsteps">${p.steps.map((x, i) => `<div class="b pdstep" data-c="0" data-d="${400 + i * 350}" id="pd${i}"><div class="top"><span class="t">${esc(T(PD.step, { n: i + 1 }))}</span><span class="tm">${fmt(x[1])}</span></div>${outnum('0' + (i + 1), 66, 'rgba(201,164,92,.95)')}<h3>${esc(x[0])}</h3><p>${esc(x[2])}</p><i class="prog"></i></div>`).join('')}</div>
       <div class="timer b" data-c="1"><span class="clock" id="clk" aria-live="off">${fmt(total)}</span><div class="tbar"><i id="tbar"></i></div><button class="btn" id="tgo">${esc(PD.start)}</button>
-        <label class="check"><input type="checkbox" id="ran" ${st.pd[s.id] ? 'checked' : ''}> ${esc(PD.ran)}</label></div>`,
+        <div class="ranopts" role="radiogroup" aria-label="${esc(PD.ran)}">${[['ran', PD.ran], ['later', PD.later]].map(([k, l]) => `<label class="check"><input type="radio" name="ran" value="${k}" ${pdVal(s) === k ? 'checked' : ''}> ${esc(l)}</label>`).join('')}</div></div>`,
       after: () => {
         let t0 = null, el = 0, run = false;
         const upd = () => {
@@ -904,7 +975,7 @@
           if (vo && !vo.paused) vo.pause();
           t0 = Date.now(); run = true; $('#tgo').textContent = PD.pause; clearInterval(ui.timer); ui.timer = setInterval(upd, 200); upd();
         });
-        $('#ran').addEventListener('change', e => { st.pd[s.id] = e.target.checked; save(); logInteraction('prodrill_' + s.pro, 'true-false', e.target.checked, 'neutral'); });
+        $$('input[name="ran"]').forEach(r => r.addEventListener('change', e => { st.pd[s.id] = e.target.value; save(); logInteraction('prodrill_' + s.pro, 'choice', e.target.value, 'neutral'); }));
         ui.cleanup = () => clearInterval(ui.timer);
       }
     };
@@ -913,7 +984,7 @@
   R.pulse = s => {
     const PU = U.pulse, gate = 'pulse' + s.n, done = !!st.gates[gate], cs = codeScreen('pulse', s.n);
     return {
-      cls: 'steel', html: `${deco('left:-150px;bottom:-170px')}<div class="pulsewrap"><div>${eyebrow(T(PU.eyebrow, { n: s.n }), 0)}<h1 class="title b" data-c="0" style="font-size:46px">${esc(PU.heading)}</h1>
+      cls: 'steel' + finalCls(s.lesson), html: `${wm(s.lesson, 'soft')}${deco('left:-150px;bottom:-170px')}<div class="pulsewrap"><div>${eyebrow(T(PU.eyebrow, { n: s.n }), 0)}<h1 class="title b" data-c="0" style="font-size:46px">${esc(PU.heading)}</h1>
         <div class="seasondots b" data-c="0">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i === s.n ? 'on' : (i < s.n ? 'past' : '')}"></i>`).join('')}<span>${esc(T(PU.of, { n: s.n }))}</span></div>
         <div class="pulsechips">${C.pulseItems.map(k => `<div${B(1, 'pchipx')}>${ICON[k.toLowerCase()] ? `<img src="${ICON[k.toLowerCase()]}" alt="">` : `<div class="rp" aria-hidden="true">${IC.reps}</div>`}<b>${esc(k.toUpperCase())}</b></div>`).join('')}</div></div>
       <div class="pulseside">${nextCard(s, 2, done ? (cs ? cs.ok : T(PU.done, { n: s.n })) : '')}</div></div>`
@@ -973,19 +1044,21 @@
   R.summary = s => {
     const SU = U.summary;
     return {
-      html: `<div class="hd">${eyebrow(T(SU.eyebrow, { n: s.lesson_no }), 0)}<h1 class="title b" data-c="0">${esc(SU.heading)}</h1></div>
+      cls: 'paper sumscr' + finalCls(s.lesson), html: `${wm(s.lesson, 'light')}<div class="hd">${eyebrow(T(SU.eyebrow, { n: s.lesson_no }), 0)}<h1 class="title b" data-c="0">${esc(SU.heading)}</h1></div>
       <div class="keys">${s.points.map((p, i) => `<div${B(p[1], 'key')}>${STAR}${outnum('0' + (i + 1), 92, i === 2 ? '#7A5B1E' : '#C9A45C')}<h3>${esc(p[0])}</h3></div>`).join('')}</div>
       <div class="sumfoot ${s.book ? '' : 'one'}"><div class="dlcard b" data-c="${lastC(s)}"><div class="doc" aria-hidden="true">DOCX</div><div class="t"><span class="tag">${esc(SU.answers_tag)}</span><div>${esc(SU.answers)}</div><button class="btn sm" id="dl">${IC.download}${esc(SU.download)}</button></div></div>
-      ${s.book ? `<div class="bookcard b" data-c="${lastC(s)}"><img src="assets/mark.svg" alt=""><div><span class="tag">${esc(SU.book_tag)} · ${esc(s.book)}</span><div>${esc(s.book_note)}</div></div></div>` : ''}</div>`,
+      ${s.book ? `<div class="bookcard b" data-c="${lastC(s)}"><img src="${(U.book && U.book.book && U.book.book.img) || 'assets/mark.svg'}" alt="" class="bc"><div><span class="tag">${esc(SU.book_tag)} · ${esc(s.book)}</span><div>${esc(s.book_note)}</div></div></div>` : ''}</div>`,
       after: () => $('#dl').addEventListener('click', () => downloadAnswers(s.lesson))
     };
   };
 
   R.close = s => {
     const CL = U.close, n = s.n, nextL = 'L' + (n + 1), open = lessonOpen(nextL), rec = !!st.gates['pulse' + n];
+    const prog = `<div class="seasonline b" data-c="0" aria-label="${esc(T(CL.progress, { n }))}">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i < n ? 'done' : (i === n ? 'now' : '')}"></i>`).join('')}<span>${esc(T(CL.progress, { n }))}</span></div>`;
     return {
-      cls: 'dark cover', html: `${bg(s.photo)}<div class="shade"></div>${bignum(s.lesson)}${brand()}<div class="inner" style="width:700px">
-      <div${B(0, 'kicker')}>${rec ? IC.check + esc(CL.recorded) : STAR + esc(T(CL.kicker, { n }))}</div><h1${B(0)} style="font-size:58px">${esc(s.heading)}</h1>
+      cls: 'dark cover closescr' + finalCls(s.lesson), html: `${bg(s.photo)}<div class="shade"></div>${wm(s.lesson)}${bignum(s.lesson)}${brand()}<div class="inner" style="width:700px">
+      <div class="didit b" data-c="0"><span class="burst" aria-hidden="true">${IC.check}</span>${esc(CL.done_badge)}</div>
+      <div${B(0, 'kicker')}>${rec ? IC.check + esc(CL.recorded) : STAR + esc(T(CL.kicker, { n }))}</div><h1${B(0)} style="font-size:58px">${esc(s.heading)}</h1>${prog}
       <div${B(1, 'blocks')}><div class="blk"><span class="tag">${esc(CL.this_week)}</span><div class="v">${esc(s.thisweek)}</div></div>
         <div class="blk dim"><span class="tag">${esc(CL.next)}</span><div class="v" style="font-size:19px">${esc(s.next)}</div><div class="s">${esc(s.nextline)}</div></div></div>
       <div${B(1, 'row')}>${open ? nextBtn(T(CL.start, { n: n + 1 })) : ''}<button class="btn ghost lg" id="exitL">${esc(CL.exit)}</button></div></div>${seasonBar(s.lesson)}`,
@@ -1009,7 +1082,7 @@
     }).join('');
     return {
       html: `<div class="hd">${eyebrow(s.eyebrow, 0)}<h1 class="title b" data-c="0" style="font-size:40px">${esc(s.heading)}</h1></div>
-      <div class="tn"><div class="tncard then b l" data-c="1"><span class="tag">${esc(s.base_label)}</span>${rate('base', s.base_label)}
+      ${s.hint ? `<p class="tnhint b" data-c="1">${IC.book}<span>${esc(s.hint)}</span></p>` : ''}<div class="tn"><div class="tncard then b l" data-c="1"><span class="tag">${esc(s.base_label)}</span>${rate('base', s.base_label)}
         <label for="why">${esc(s.why_label)}</label><textarea id="why">${esc(st.why)}</textarea></div>
       <div class="tncard today b r" data-c="1"><span class="tag">${esc(s.today_label)}</span>${rate('today', s.today_label)}</div></div>`,
       after: () => {
@@ -1057,11 +1130,11 @@
   R.share = s => {
     const name = fullName(), card = [F(s, 'card_kicker'), name, s.card_title].filter(Boolean).join(': ');
     return {
-      html: `<div class="sharewrap"><div>${eyebrow(F(s, 'eyebrow'), 0)}<h1 class="title b" data-c="0" style="font-size:46px">${esc(F(s, 'heading'))}</h1>
-      <div class="quote-box b" data-c="0" id="postTxt">${esc(s.post)}</div>
+      cls: 'paper sharescr final', html: `${wm(s.lesson, 'light')}<div class="sharewrap"><div>${eyebrow(F(s, 'eyebrow'), 0)}<h1 class="title b" data-c="0" style="font-size:46px">${esc(F(s, 'heading'))}</h1>
+      <div class="quote-box b" data-c="0" id="postTxt">${esc(s.post)}</div>${F(s, 'cert_hint') ? `<p class="certhint b" data-c="1">${IC.download}<span>${esc(F(s, 'cert_hint'))}</span></p>` : ''}
       <div class="row b" data-c="0" style="margin-top:24px"><button class="btn" id="copyPost">${IC.copy}${esc(F(s, 'copy'))}</button><a class="btn ghost" href="https://www.linkedin.com/feed/" target="_blank" rel="noopener">${esc(F(s, 'open'))}${IC.ext}</a></div><div id="copied" aria-live="polite"></div></div>
       <div class="sharecard b r" data-c="0" role="img" aria-label="${esc(card)}">${bg(F(s, 'photo'))}<div class="shade"></div>
-        <div class="in"><img src="assets/mark.svg" alt="" style="height:50px;align-self:flex-start"><div class="k">${esc(F(s, 'card_kicker'))}</div>${name ? `<div class="n">${esc(name)}</div>` : ''}<div class="l">${esc(s.card_title)}</div><div class="f">${esc(F(s, 'card_foot'))}</div></div></div></div>`,
+        <div class="in">${C.brand ? `<img src="${C.brand.lockup_white}" alt="" style="height:38px;align-self:flex-start">` : `<img src="assets/mark.svg" alt="" style="height:50px;align-self:flex-start">`}<div class="k">${esc(F(s, 'card_kicker'))}</div>${name ? `<div class="n">${esc(name)}</div>` : ''}<div class="l">${esc(s.card_title)}</div><div class="f">${esc(F(s, 'card_foot'))}</div></div></div></div>`,
       after: () => $('#copyPost').addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(s.post); } catch (e) { const r = document.createRange(); r.selectNodeContents($('#postTxt')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); document.execCommand('copy'); }
         $('#copied').innerHTML = okAlert(F(s, 'copied')); logInteraction('share_copy', 'other', 'copied', 'neutral');
@@ -1084,13 +1157,13 @@
     const pats = LESSONS.filter(l => st.patterns[l]).map(l => `<span class="pchip"><i>L${l.slice(1)}</i>${esc(st.patterns[l])}</span>`).join('');
     const first = st.learner.first;
     return {
-      html: `<div class="finish"><div class="fhead"><div>${eyebrow(F(s, 'eyebrow'), 0)}<h1 class="title b" data-c="0">${esc(first ? T(F(s, 'heading'), { first }) : F(s, 'heading_plain'))}</h1><p class="date b" data-c="0">${esc(T(F(s, 'date_line'), { date }))}</p></div>
+      cls: 'paper finishscr final', html: `<div class="confetti" aria-hidden="true">${Array.from({ length: 22 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div>${wm(s.lesson, 'light')}<div class="finish"><div class="fhead"><div>${eyebrow(F(s, 'eyebrow'), 0)}<h1 class="title b" data-c="0">${esc(first ? T(F(s, 'heading'), { first }) : F(s, 'heading_plain'))}</h1><p class="date b" data-c="0">${esc(T(F(s, 'date_line'), { date }))}</p></div>
         <div class="row b" data-c="0"><button class="btn sm ghost" id="savePage">${IC.print}${esc(F(s, 'save'))}</button>${nextBtn(certOn() ? s.cta : F(s, 'cta_off'))}</div></div>
       <div class="left"><div class="vbox b z" data-c="0" id="vb"></div></div>
-      <div class="right b r" data-c="0"><span class="tag" style="margin-bottom:10px">${esc(F(s, 'compare_label'))}</span>
-        <div class="answer"><b>${esc(F(s, 'l1_label'))}</b><p>${a1 ? esc(a1) : `<span class="small">${esc(F(s, 'blank1'))}</span>`}</p></div>
-        <div class="answer"><b>${esc(F(s, 'l6_label'))}</b><p>${a6 ? esc(a6) : `<span class="small">${esc(F(s, 'blank6'))}</span>`}</p></div>
-        <span class="tag" style="margin:12px 0 10px">${esc(F(s, 'patterns_label'))}</span><div class="pchips">${pats || `<span class="small">${esc(F(s, 'no_patterns'))}</span>`}</div></div></div>`,
+      <div class="right b r" data-c="0">${a1 || a6 ? `<span class="tag" style="margin-bottom:10px">${esc(F(s, 'compare_label'))}</span>` : ''}
+        ${a1 ? `<div class="answer"><b>${esc(F(s, 'l1_label'))}</b><p>${esc(a1)}</p></div>` : ''}
+        ${a6 ? `<div class="answer"><b>${esc(F(s, 'l6_label'))}</b><p>${esc(a6)}</p></div>` : ''}
+        ${pats ? `<span class="tag" style="margin:12px 0 10px">${esc(F(s, 'patterns_label'))}</span><div class="pchips">${pats}</div>` : ''}</div></div>`,
       after: () => { mountVideo($('#vb'), s.video, { label: F(s, 'video_label'), autoplay: true }); $('#savePage').addEventListener('click', () => window.print()); bindNext(); }
     };
   };
@@ -1107,7 +1180,7 @@
       : `<div class="stnum ${path ? 'stpath' : 'strow'} n${s.steps.length}">${s.steps.map((x, i) => `<div${B(x.c, 'stcard')} style="--i:${i}">${outnum(x.label, path ? 64 : 84, 'rgba(201,164,92,.95)')}<h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div>`).join('')}</div>`;
     return {
       cls: s.style === 'timeline' ? 'mist' : (path ? 'steel' : 'paper'),
-      html: `${s.style === 'timeline' ? '' : deco(path ? 'right:-120px;bottom:-150px' : 'right:-110px;top:-140px;color:var(--navy)')}<div class="hd">${eyebrow(s.eyebrow, 0)}<h1 class="title b" data-c="0">${esc(s.heading)}</h1>${s.sub ? `<p class="lead b" data-c="0" style="margin-top:10px">${esc(s.sub)}</p>` : ''}</div>
+      html: `${s.motion ? wm(s.lesson, s.style === 'timeline' || !path ? 'light' : '') : ''}${s.style === 'timeline' ? '' : deco(path ? 'right:-120px;bottom:-150px' : 'right:-110px;top:-140px;color:var(--navy)')}<div class="hd">${eyebrow(s.eyebrow, 0)}<h1 class="title b" data-c="0">${esc(s.heading)}</h1>${s.sub ? `<p class="lead b" data-c="0" style="margin-top:10px">${esc(s.sub)}</p>` : ''}</div>
       ${body}${s.pdf ? `<div class="stfoot b" data-c="${lastC(s)}">${pdfBtn(s.pdf, s.pdf_label, 'sm', IC.doc)}</div>` : ''}`
     };
   };
@@ -1261,10 +1334,13 @@
     const FE = U.formembed, id = s.form + (s.n || '');
     return {
       cls: 'mist formscreen', html: `<div class="formhead"><div>${eyebrow(s.eyebrow, 0)}<h1 class="b" data-c="0">${esc(s.heading)}</h1></div><p class="note b" data-c="0">${s.optional ? STAR : IC.key}<span>${esc(s.note)}</span></p></div>
-      <div class="formcard b z" data-c="0">${C.forms[s.form].local ? '<div class="svy" id="svy"></div>' : `<div class="formloading" id="formLoading" role="status"><span class="spin" aria-hidden="true"></span><span>${esc(FE.loading)}</span></div>`}</div>`,
+      <div class="formcard b z ${s.connect ? 'withconnect' : ''}" data-c="0">${C.forms[s.form].local ? '<div class="svy" id="svy"></div>' : `<div class="formloading" id="formLoading" role="status"><span class="spin" aria-hidden="true"></span><span>${esc(FE.loading)}</span></div>`}</div>
+      ${s.connect ? `<div class="connect b" data-c="${lastC(s)}"><p>${esc(s.connect.line)}</p><a class="btn sm" href="${esc(s.connect.href)}" target="_blank" rel="noopener" id="connectBtn">${esc(s.connect.button)}${IC.ext}</a></div>` : ''}`,
       after: () => {
+        const cb = $('#connectBtn'); if (cb) cb.addEventListener('click', () => logInteraction('stay_connected', 'other', 'opened', 'neutral'));
         if (C.forms[s.form].local) { svyMount(s); return; }
         const f = formFrame(s);
+        f.box.classList.toggle('short', !!s.connect);
         slide.dataset.form = id;
         if (f.ready) $('#formLoading').classList.add('done');
         // after 12 seconds without the form, show whatever the frame has and make the new-tab link the main way in
@@ -1284,7 +1360,7 @@
     const first = s.form === 'pre' ? FC.cta_pre : FC.cta;
     return {
       cls: 'mist', html: `${deco('right:-110px;top:-130px;color:var(--navy)')}<div class="center"><div class="keyic b z" data-c="0">${IC.key}</div>${eyebrow(s.eyebrow, 0)}<h1 class="bigq b" data-c="0" style="margin-bottom:26px">${esc(s.heading)}</h1>
-      <div class="b codebox" data-c="0">${open ? okAlert(s.ok) : codeBlock('fc', s.prompt, s.button)}</div>
+      <div class="b codebox" data-c="0">${open ? okAlert(s.ok) : codeBlock('fc', s.prompt, s.button)}</div>${s.guide ? `<p class="guideline b" data-c="${lastC(s)}">${STAR}<span>${esc(s.guide)}</span></p>` : ''}
       <div class="row b" data-c="0" style="margin-top:26px;justify-content:center">${open ? nextBtn(first) : ''}<button class="btn ghost" id="backForm">${IC.arrowL}${esc(s.back)}</button></div></div>`,
       after: () => {
         bindNext();
@@ -1391,7 +1467,7 @@
     stopVo(); if (activeVideo) activeVideo.pause();
     if (ui.cleanup) ui.cleanup(); ui.cleanup = null;
     seek.kind = null; seekOn(false); seekPaint();
-    slide.className = 'slide dark cover'; slide.innerHTML = `${bg('stage')}<div class="shade" style="background:rgba(7,15,27,.76)"></div><div class="center" style="color:#fff"><img src="assets/mark.svg" alt="" style="height:64px;margin-bottom:20px"><h1 style="font-size:40px;margin:0 0 12px">${esc(X.saved)}</h1><p style="color:#E6ECF3;margin:0 0 26px">${esc(X.close)}</p><button class="btn" id="reopen">${esc(X.return)}</button></div>`;
+    slide.className = 'slide dark cover'; slide.innerHTML = `${bg('stage')}<div class="shade" style="background:rgba(7,15,27,.76)"></div><div class="center" style="color:#fff">${C.brand ? `<img src="${C.brand.lockup_white}" alt="" style="height:48px;margin-bottom:26px">` : `<img src="assets/mark.svg" alt="" style="height:64px;margin-bottom:20px">`}<h1 style="font-size:40px;margin:0 0 12px">${esc(X.saved)}</h1><p style="color:#E6ECF3;margin:0 0 26px">${esc(X.close)}</p><button class="btn" id="reopen">${esc(X.return)}</button></div>`;
     btnNext.disabled = true; gateMsg.textContent = '';
     $('#reopen').addEventListener('click', () => render(true));
     $('#reopen').focus();
@@ -1465,7 +1541,8 @@
     sc.filter(x => x.type === 'reflect').forEach(r => { out.push(['Heading1', r.heading]); A(r.prompt, st.answers[r.key]); });
     sc.filter(x => x.type === 'lookback').forEach(r => { out.push(['Heading1', r.heading]); out.push(['Heading2', U.lookback.then_label]); A(null, st.answers[r.key]); out.push(['Heading2', U.lookback.now_label]); A(r.prompt, st.answers[r.key + '_progress']); });
     const pd = sc.find(x => x.type === 'prodrill');
-    if (pd) { const p = P[pd.pro]; out.push(['Heading1', U.huddle.eyebrow + ': ' + p.drill]); out.push(['', `${p.name}. ${st.pd[pd.id] ? X.ran : X.not_ran}`]); }
+    if (pd) { const p = P[pd.pro], v = pdVal(pd); out.push(['Heading1', U.huddle.eyebrow + ': ' + p.drill]); out.push(['', `${p.name}. ${v === 'ran' ? X.ran : (v === 'later' ? (U.prodrill.later + '.') : X.not_ran)}`]); }
+    if (st.fivewords && L === 'L1') { out.push(['Heading1', (U.reset || {}).yours || 'Your five words']); out.push(['Answer', st.fivewords]); }
     if (sc.some(x => x.type === 'thennow')) {
       const t = sc.find(x => x.type === 'thennow');
       out.push(['Heading1', t ? t.eyebrow : X.then_now_title]);
@@ -1569,7 +1646,7 @@
     const key = mainVo(s);
     if (fresh !== false) {
       armBuild(key, true);
-      if (key) voTimer = setTimeout(() => { if (S[st.pos] === s) playVo(key); }, 450);
+      if (key) voTimer = setTimeout(() => { if (S[st.pos] === s) playVo(key); }, 650);
       btnPlay.classList.remove('nudge');
       seekBind(key ? 'vo' : (activeVideo ? 'video' : null));
       slide.focus({ preventScroll: true });
@@ -1651,7 +1728,7 @@
     if (txt) h += `<h3>Narration</h3>` + txt;
     const vk = s.video && V[s.video] && V[s.video].cc;
     if (vk && CAP[vk]) { h += `<h3>Video</h3>`; let para = []; CAP[vk].forEach((c, i) => { para.push(c[2]); if (para.length >= 4 || i === CAP[vk].length - 1) { h += `<p>${esc(para.join(' '))}</p>`; para = []; } }); }
-    if (!h) h = '<p>This screen has no narration or speech.</p>';
+    if (!h) h = s.video ? '<p>This video has music and no speech.</p>' : '<p>This screen has no narration. Everything is on the screen.</p>';
     $('#transcriptBody').innerHTML = h;
   }
 
@@ -1709,6 +1786,6 @@
   // A first click is needed before a browser will play sound, so the course opens behind a short start card.
   slide.className = 'slide dark cover'; slide.innerHTML = `${bg('faces')}<div class="shade" style="background:rgba(7,15,27,.72)"></div>`;
   if (resumeAt > 0) modal(SU.back_title, `<p>${esc(SU.back_body)}</p><p class="small">${esc(S[resumeAt].menu)}, ${esc(lessonName(S[resumeAt].lesson))}</p>`, [[SU.restart, () => { st.pos = 0; save(); render(true); }], [SU.resume, () => { st.pos = resumeAt; save(); render(true); }]]);
-  else modal(SU.title, `<p>${esc(SU.body)}</p>`, [[SU.begin, () => render(true)]]);
+  else modal(SU.title, `${C.brand ? `<img class="startlockup" src="${C.brand.lockup}" alt="${esc(C.brand.alt)}">` : ''}<p>${esc(SU.body)}</p>`, [[SU.begin, () => render(true)]]);
   setTimeout(fit, 50);
 })();
