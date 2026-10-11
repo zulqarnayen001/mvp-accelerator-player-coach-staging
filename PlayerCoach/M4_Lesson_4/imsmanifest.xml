@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="AA_MVP_PC_M4" version="1"
+  xmlns="http://www.imsglobal.org/xsd/imscp_v1p1"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3"
+  xmlns:adlseq="http://www.adlnet.org/xsd/adlseq_v1p3"
+  xmlns:adlnav="http://www.adlnet.org/xsd/adlnav_v1p3"
+  xmlns:imsss="http://www.imsglobal.org/xsd/imsss"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd http://www.adlnet.org/xsd/adlcp_v1p3 adlcp_v1p3.xsd http://www.adlnet.org/xsd/adlseq_v1p3 adlseq_v1p3.xsd http://www.adlnet.org/xsd/adlnav_v1p3 adlnav_v1p3.xsd http://www.imsglobal.org/xsd/imsss imsss_v1p0.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>2004 4th Edition</schemaversion>
+  </metadata>
+  <organizations default="AA_MVP_PC_M4_ORG">
+    <organization identifier="AA_MVP_PC_M4_ORG">
+      <title>M.V.P. Accelerator · Player-Coach · Lesson 4: Activate Your M.V.P. Under Pressure</title>
+      <item identifier="AA_MVP_PC_M4_ITEM" identifierref="AA_MVP_PC_M4_RES">
+        <title>M.V.P. Accelerator · Player-Coach · Lesson 4: Activate Your M.V.P. Under Pressure</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="AA_MVP_PC_M4_RES" type="webcontent" adlcp:scormType="sco" href="index.html">
+      <file href="assets/Agility.png"/>
+      <file href="assets/Alignment.png"/>
+      <file href="assets/Resilience.png"/>
+      <file href="assets/Well-being.png"/>
+      <file href="assets/arena.jpg"/>
+      <file href="assets/book_cover.png"/>
+      <file href="assets/brand/lockup.png"/>
+      <file href="assets/brand/lockup_line_white.png"/>
+      <file href="assets/brand/lockup_white.png"/>
+      <file href="assets/certificate_background.jpg"/>
+      <file href="assets/clients/avanos.png"/>
+      <file href="assets/fonts/Montserrat-Italic-VF.ttf"/>
+      <file href="assets/fonts/Montserrat-VF.ttf"/>
+      <file href="assets/mark.svg"/>
+      <file href="assets/melissa.jpg"/>
+      <file href="assets/photos/ai_ai_rollout.jpg"/>
+      <file href="assets/photos/ai_celebration_team.jpg"/>
+      <file href="assets/photos/ai_pc_coach_walk.jpg"/>
+      <file href="assets/photos/ai_pc_manager_listening.jpg"/>
+      <file href="assets/photos/ai_pc_window_call.jpg"/>
+      <file href="assets/photos/ai_pressure_desk.jpg"/>
+      <file href="assets/photos/faces.jpg"/>
+      <file href="assets/photos/hexagon.jpg"/>
+      <file href="assets/photos/man_writing.jpg"/>
+      <file href="assets/photos/melissa.jpg"/>
+      <file href="assets/photos/stage.jpg"/>
+      <file href="assets/photos/woman_profile.jpg"/>
+      <file href="assets/playercoach_playbook_cover.jpg"/>
+      <file href="assets/posters/drill_l4.jpg"/>
+      <file href="assets/posters/m4_1.jpg"/>
+      <file href="assets/posters/m4_2.jpg"/>
+      <file href="assets/posters/m4_3.jpg"/>
+      <file href="assets/posters/m4_4.jpg"/>
+      <file href="assets/posters/pro_mannino.jpg"/>
+      <file href="assets/pro_lachina.jpg"/>
+      <file href="assets/pro_mannino.jpg"/>
+      <file href="assets/pro_ryall.jpg"/>
+      <file href="assets/pro_sagar.jpg"/>
+      <file href="assets/pro_stephanie.jpg"/>
+      <file href="assets/pro_tracey.jpg"/>
+      <file href="assets/scorecard_cover.jpg"/>
+      <file href="assets/scorecard_example.jpg"/>
+      <file href="assets/scorecard_example_cover.jpg"/>
+      <file href="assets/scorecard_page.jpg"/>
+      <file href="assets/star.svg"/>
+      <file href="assets/video/drill_l4.mp4"/>
+      <file href="assets/video/m4_1.mp4"/>
+      <file href="assets/video/m4_2.mp4"/>
+      <file href="assets/video/m4_3.mp4"/>
+      <file href="assets/video/m4_4.mp4"/>
+      <file href="assets/video/pro_mannino.mp4"/>
+      <file href="audio/ci_a.mp3"/>
+      <file href="audio/ci_b.mp3"/>
+      <file href="audio/ci_c.mp3"/>
+      <file href="audio/kc_retry.mp3"/>
+      <file href="audio/n_4_14.mp3"/>
+      <file href="audio/pc_n_4_0.mp3"/>
+      <file href="audio/pc_n_4_1.mp3"/>
+      <file href="audio/pc_n_4_10.mp3"/>
+      <file href="audio/pc_n_4_12.mp3"/>
+      <file href="audio/pc_n_4_12_o0.mp3"/>
+      <file href="audio/pc_n_4_12_o1.mp3"/>
+      <file href="audio/pc_n_4_14.mp3"/>
+      <file href="audio/pc_n_4_15.mp3"/>
+      <file href="audio/pc_n_4_16.mp3"/>
+      <file href="audio/pc_n_4_18_q0.mp3"/>
+      <file href="audio/pc_n_4_18_q1.mp3"/>
+      <file href="audio/pc_n_4_18_q2.mp3"/>
+      <file href="audio/pc_n_4_18_q3.mp3"/>
+      <file href="audio/pc_n_4_18_w0.mp3"/>
+      <file href="audio/pc_n_4_18_w1.mp3"/>
+      <file href="audio/pc_n_4_18_w2.mp3"/>
+      <file href="audio/pc_n_4_18_w3.mp3"/>
+      <file href="audio/pc_n_4_19.mp3"/>
+      <file href="audio/pc_n_4_20.mp3"/>
+      <file href="audio/pc_n_4_3.mp3"/>
+      <file href="audio/pc_n_4_4.mp3"/>
+      <file href="audio/pc_n_4_7.mp3"/>
+      <file href="audio/pc_n_4_9.mp3"/>
+      <file href="audio/pc_n_4_9_certainty.mp3"/>
+      <file href="audio/pc_n_4_9_competence.mp3"/>
+      <file href="audio/pc_n_4_9_connection.mp3"/>
+      <file href="audio/r2_code_pulse.mp3"/>
+      <file href="audio/r2_form_pulse.mp3"/>
+      <file href="audio/r2_pulse.mp3"/>
+      <file href="captions/drill_l4.vtt"/>
+      <file href="captions/m4_1.vtt"/>
+      <file href="captions/m4_2.vtt"/>
+      <file href="captions/m4_3.vtt"/>
+      <file href="captions/m4_4.vtt"/>
+      <file href="captions/pro_mannino.vtt"/>
+      <file href="css/fonts.css"/>
+      <file href="css/player.css"/>
+      <file href="index.html"/>
+      <file href="js/captions.js"/>
+      <file href="js/content.js"/>
+      <file href="js/narration.js"/>
+      <file href="js/player.js"/>
+      <file href="js/scorm.js"/>
+      <file href="resources/90-Day_Way_Core_4_Scorecard.pdf"/>
+      <file href="resources/90-Day_Way_Core_4_Scorecard_Example.pdf"/>
+      <file href="resources/Commitment_and_Starting_Line_Agenda.pdf"/>
+      <file href="resources/PlayerCoach_Playbook_Lesson4.pdf"/>
+    </resource>
+  </resources>
+</manifest>
